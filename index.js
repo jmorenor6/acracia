@@ -1,15 +1,18 @@
+//npm start
 var express = require("express"),
     app = express(),
     bodyParser  = require("body-parser"),
     methodOverride = require("method-override"),
+    multipart = require("connect-multiparty"),
     mongoose = require('mongoose');
+
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOverride());
 
 var router = express.Router();
-
 router.get('/', function(req, res) {
    res.send("Hello World!");
 });
@@ -22,9 +25,6 @@ app.listen(3000, function() {
 
 var LibroCtrl = require('./controllers/libros');
 
-// API routes
-var libros = express.Router();
-
 app.get('/libros/',LibroCtrl.findAllLibros);
 app.get('/libro/:id/',LibroCtrl.findById);
 app.post('/libro/',LibroCtrl.addLibro);
@@ -32,13 +32,25 @@ app.put('/libro/:id/',LibroCtrl.updateLibro);
 app.delete('/libro/:id/',LibroCtrl.deleteLibro);
 
 
-libros.route('/libros')
-  .get(LibroCtrl.findAllLibros)
-  .post(LibroCtrl.addLibro);
 
-libros.route('/libros/:id')
-  .get(LibroCtrl.findById)
-  .put(LibroCtrl.updateLibro)
-  .delete(LibroCtrl.deleteLibro);
 
-app.use('/api', libros);
+app.use(multipart()); //Express 4
+
+app.post('/upload', function(req, res) {
+   //El modulo 'fs' (File System) que provee Nodejs nos permite manejar los archivos
+   var fs = require('fs')
+
+   var path = req.files.archivo.path
+   var newPath = req.files.archivo.name
+
+   var is = fs.createReadStream(path)
+   var os = fs.createWriteStream(newPath)
+
+   is.pipe(os)
+
+   is.on('end', function() {
+      //eliminamos el archivo temporal
+      fs.unlinkSync(path)
+   })
+   res.send(req.files.archivo);
+})

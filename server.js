@@ -25,6 +25,8 @@ app.listen(3000, function() {
 
 var LibroCtrl = require('./controllers/libros');
 
+
+
 app.get('/libros/',LibroCtrl.findAllLibros);
 app.get('/libro/:id/',LibroCtrl.findById);
 app.post('/libro/',LibroCtrl.addLibro);
